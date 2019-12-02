@@ -1,0 +1,315 @@
+swagger: "2.0"
+info:
+  description: "API-k és mikroszolgátatások kötelező program 2019"
+  version: "0.0.1"
+  title: Mobil Tárca API
+basePath: /
+host: localhost:10010
+schemes:
+- https
+- http
+tags:
+- name: "Order"
+  description: Operations about purchases
+- name: "User"
+  description: Operations about user
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /register:
+    x-swagger-router-controller: authentication
+    post:
+      description: Registers a new user
+      operationId: createUser
+      security: []
+      tags:
+      - "User"
+      parameters:
+        - name: user
+          in: body
+          description: The user to create
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/CreateUserResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /login:
+    x-swagger-router-controller: authentication
+    post:
+      description: Logs in the user and returns a session ID
+      operationId: login
+      security: []
+      tags:
+      - "User"
+      parameters:
+        - name: credentials
+          in: body
+          description: Credentials that are used for authenticating the user
+          required: true
+          schema:
+            $ref: "#/definitions/Credentials"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/AuthenticationResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /logout:
+    x-swagger-router-controller: authentication
+    get:
+      description: Logs out the user and removes it's sessiodID from the sessions collection
+      operationId: logout
+      tags:
+      - "User"
+      parameters:
+        - name: x_session_id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/AuthenticationResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user:
+    x-swagger-router-controller: user
+    get:
+      description: Returns the details of an user, only if the email parameter matches the authenticated users email
+      operationId: getUser
+      tags:
+      - "User"
+      parameters:
+        - name: x_session_id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+        - name: email
+          in: query
+          description: The email of the user to find
+          required: true
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/UserResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      description: Updates the user
+      operationId: updateUser
+      tags:
+      - "User"
+      parameters:
+        - name: x_session_id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+        - name: user
+          in: body
+          description: User object with updated values
+          required: true
+          schema:
+            $ref: "#/definitions/User"
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/UserResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      description: Deletes the user
+      operationId: deleteUser
+      tags:
+      - "User"
+      parameters:
+        - name: x_session_id
+          in: header
+          description: Session ID
+          required: true
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/DeleteUserResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /order:
+    x-swagger-router-controller: order
+    get:
+      tags:
+      - "Order"
+      description: Returns a list of purchases executed by the authenticed user
+      operationId: listOrders
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/ListOrdersResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+      - "Order"
+      description: Executes a purchase
+      operationId: createOrder
+      parameters:
+      - name: x_session_id
+        in: header
+        description: Session ID
+        required: true
+        type: string
+      - name: order
+        in: body
+        description: Order description
+        schema:
+          $ref: "#/definitions/Order"
+        required: true
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/CreateOrderResponse"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: x_session_id
+definitions:
+  User:
+    required:
+    - email
+    - password
+    properties:
+      email:
+        type: string
+        example: "example@gmail.com"
+      password:
+        type: string
+        example: "password"
+      firstName:
+        type: string
+        example: "Arthur"
+      lastName:
+        type: string
+        example: "Rose"
+  CreateUserResponse:
+    properties:
+      _id:
+        type: string
+        example: "somestring"
+  UserResponse:
+    properties:
+      user:
+        $ref: "#/definitions/User"
+  Credentials:
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+        example: "yourname"
+      password:
+        type: string
+        example: "password"
+  AuthenticationResponse:
+    required:
+      - sessionID
+    properties:
+      sessionID:
+        type: string
+        example: "exampleID"
+  DeleteUserResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
+  Order:
+    required:
+    - totalPrice
+    properties:
+      when:
+        type: string
+        format: date
+      totalPrice:
+        type: integer
+        format: int64
+  CreateOrderResponse:
+    properties:
+      order:
+        $ref: "#/definitions/Order"
+  ListOrdersResponse:
+    properties:
+      orders:
+        type: array
+        items:
+          $ref: "#/definitions/Order"

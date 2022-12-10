@@ -9,7 +9,7 @@
   "main": "app.js",
   "dependencies": {
     "cors": "^2.8.4",
-    "express": "^4.12.3",
+    "express": "^4.17.3",
     "lodash": "^4.17.4",
     "request": "^2.88.0",
     "swagger": "^0.7.5",
